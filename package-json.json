@@ -1,0 +1,53 @@
+{
+  "name": "butler-ai-assistant",
+  "version": "1.0.0",
+  "description": "A desktop butler AI assistant with voice recognition and AI capabilities",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "dependencies": {
+    "auto-launch": "^5.0.6",
+    "electron-store": "^8.1.0",
+    "googleapis": "^129.0.0",
+    "moment": "^2.30.1",
+    "node-notifier": "^10.0.1",
+    "openai": "^4.29.0"
+  },
+  "build": {
+    "appId": "com.example.butler-ai",
+    "productName": "Butler AI",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "assets/icon.icns",
+      "darkModeSupport": true
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Utility",
+      "icon": "assets/icon.png"
+    },
+    "files": [
+      "**/*",
+      "assets/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+  }
+}

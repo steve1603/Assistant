@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Butler AI Settings</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      margin-top: 0;
+      color: #1a365d;
+      font-size: 24px;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .section {
+      margin-bottom: 25px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 15px;
+    }
+    
+    .section:last-child {
+      border-bottom: none;
+    }
+    
+    .section-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 15px;
+      color: #1a365d;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    input[type="time"],
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    input[type="checkbox"] {
+      margin-right: 10px;
+    }
+    
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      font-weight: normal;
+    }
+    
+    .time-range {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .button-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    button.primary {
+      background-color: #1a365d;
+      color: white;
+    }
+    
+    button.secondary {
+      background-color: #e2e8f0;
+      color: #333;
+    }
+    
+    button:hover {
+      opacity: 0.9;
+    }
+    
+    .api-key-section {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .api-key-section input {
+      flex: 1;
+    }
+    
+    .hide-password {
+      font-family: monospace;
+      letter-spacing: 3px;
+    }
+    
+    .success-message {
+      background-color: #e6f7ef;
+      color: #147d64;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    
+    .error-message {
+      background-color: #fae8e8;
+      color: #e12d39;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Butler AI Settings</h1>
+    
+    <div id="success-message" class="success-message">
+      Settings saved successfully!
+    </div>
+    
+    <div id="error-message" class="error-message">
+      Error saving settings. Please try again.
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Personal Settings</div>
+      
+      <div class="form-group">
+        <label for="user-name">How should Butler address you?</label>
+        <input type="text" id="user-name" placeholder="Sir" value="Sir">
+      </div>
+      
+      <div class="form-group">
+        <label for="butler-voice">Butler's voice</label>
+        <select id="butler-voice">
+          <option value="default">Default (British Male)</option>
+          <option value="British Female">British Female</option>
+          <option value="American Male">American Male</option>
+          <option value="American Female">American Female</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Work Hours</div>
+      
+      <div class="form-group">
+        <div class="time-range">
+          <div>
+            <label for="work-start">Start time</label>
+            <input type="time" id="work-start" value="09:00">
+          </div>
+          <span>to</span>
+          <div>
+            <label for="work-end">End time</label>
+            <input type="time" id="work-end" value="17:00">
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="weekend-reminders" checked>
+          Enable reminders on weekends
+        </label>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Focus Mode</div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="focus-mode-enabled">
+          Enable Focus Mode (Do Not Disturb)
+        </label>
+      </div>
+      
+      <div class="form-group">
+        <div class="time-range">
+          <div>
+            <label for="focus-start">Start time</label>
+            <input type="time" id="focus-start" value="09:00">
+          </div>
+          <span>to</span>
+          <div>
+            <label for="focus-end">End time</label>
+            <input type="time" id="focus-end" value="12:00">
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="focus-duration">Focus session duration (minutes)</label>
+        <input type="number" id="focus-duration" min="15" max="120" step="5" value="45">
+      </div>
+      
+      <div class="form-group">
+        <label for="break-duration">Break duration (minutes)</label>
+        <input type="number" id="break-duration" min="5" max="30" step="5" value="15">
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Notifications</div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="notifications-enabled" checked>
+          Enable notifications
+        </label>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="notification-sound" checked>
+          Play sound with notifications
+        </label>
+      </div>
+      
+      <div class="form-group">
+        <label>Notification types</label>
+        <div style="margin-left: 20px;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="task-notifications" checked>
+            Tasks and reminders
+          </label>
+        </div>
+        <div style="margin-left: 20px;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="appointment-notifications" checked>
+            Appointments and meetings
+          </label>
+        </div>
+        <div style="margin-left: 20px;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="focus-notifications" checked>
+            Focus mode alerts
+          </label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">API Settings</div>
+      
+      <div class="form-group">
+        <label for="openai-key">OpenAI API Key</label>
+        <div class="api-key-section">
+          <input type="password" id="openai-key" placeholder="sk-..." class="hide-password">
+          <button class="secondary" id="show-key">Show</button>
+        </div>
+        <small>Required for advanced conversation capabilities</small>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="google-calendar-enabled">
+          Enable Google Calendar integration
+        </label>
+      </div>
+    </div>
+    
+    <div class="button-row">
+      <button class="secondary" id="cancel-button">Cancel</button>
+      <button class="primary" id="save-button">Save Settings</button>
+    </div>
+  </div>
+  
+  <script>
+    // In a real implementation, this would use ipcRenderer to communicate with the main process
+    const { ipcRenderer } = require('electron');
+    
+    // Dom elements
+    const showKeyButton = document.getElementById('show-key');
+    const openaiKeyInput = document.getElementById('openai-key');
+    const saveButton = document.getElementById('save-button');
+    const cancelButton = document.getElementById('cancel-button');
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+    
+    // Show/hide API key
+    showKeyButton.addEventListener('click', () => {
+      if (openaiKeyInput.type === 'password') {
+        openaiKeyInput.type = 'text';
+        openaiKeyInput.classList.remove('hide-password');
+        showKeyButton.textContent = 'Hide';
+      } else {
+        openaiKeyInput.type = 'password';
+        openaiKeyInput.classList.add('hide-password');
+        showKeyButton.textContent = 'Show';
+      }
+    });
+    
+    // Load current settings
+    function loadSettings() {
+      // In a real implementation, this would get data from ipcRenderer
+      // For this demonstration, we'll use default values
+      // ipcRenderer.send('get-settings');
+    }
+    
+    // Save settings
+    saveButton.addEventListener('click', () => {
+      // Collect all settings from form
+      const settings = {
+        personal: {
+          userName: document.getElementById('user-name').value,
+          butlerVoice: document.getElementById('butler-voice').value
+        },
+        workHours: {
+          start: document.getElementById('work-start').value,
+          end: document.getElementById('work-end').value,
+          weekendReminders: document.getElementById('weekend-reminders').checked
+        },
+        focusMode: {
+          enabled: document.getElementById('focus-mode-enabled').checked,
+          dndStart: document.getElementById('focus-start').value,
+          dndEnd: document.getElementById('focus-end').value,
+          focusDuration: parseInt(document.getElementById('focus-duration').value),
+          breakDuration: parseInt(document.getElementById('break-duration').value)
+        },
+        notifications: {
+          enabled: document.getElementById('notifications-enabled').checked,
+          sound: document.getElementById('notification-sound').checked,
+          tasks: document.getElementById('task-notifications').checked,
+          appointments: document.getElementById('appointment-notifications').checked,
+          focusAlerts: document.getElementById('focus-notifications').checked
+        },
+        apiSettings: {
+          openaiKey: document.getElementById('openai-key').value,
+          googleCalendarEnabled: document.getElementById('google-calendar-enabled').checked
+        }
+      };
+      
+      // In a real implementation, this would send data to ipcRenderer
+      // ipcRenderer.send('save-settings', settings);
+      
+      // Show success message
+      successMessage.style.display = 'block';
+      setTimeout(() => {
+        successMessage.style.display = 'none';
+      }, 3000);
+      
+      console.log('Settings saved:', settings);
+    });
+    
+    // Cancel button - close window
+    cancelButton.addEventListener('click', () => {
+      // In a real app: ipcRenderer.send('close-settings');
+      window.close();
+    });
+    
+    // IPC event listeners for communication with main process
+    // In a real app:
+    // ipcRenderer.on('settings-data', (event, settings) => { ... });
+    // ipcRenderer.on('save-settings-result', (event, result) => { ... });
+    
+    // Load settings when the window opens
+    document.addEventListener('DOMContentLoaded', loadSettings);
+  </script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Butler AI Assistant</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: transparent;
+      color: #333;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      background-color: #1a365d;
+      color: white;
+      cursor: move;
+      -webkit-app-region: drag;
+    }
+    
+    .title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .controls {
+      -webkit-app-region: no-drag;
+    }
+    
+    .button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 5px;
+    }
+    
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .message {
+      max-width: 75%;
+      padding: 10px 15px;
+      border-radius: 18px;
+      margin-bottom: 10px;
+      line-height: 1.4;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .user-message {
+      background-color: #e7f3ff;
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+    }
+    
+    .assistant-message {
+      background-color: #f5f5f5;
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+    }
+    
+    .input-area {
+      padding: 15px;
+      border-top: 1px solid #eee;
+      display: flex;
+    }
+    
+    #message-input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      font-size: 14px;
+      outline: none;
+    }
+    
+    #send-button {
+      background-color: #1a365d;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin-left: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .typing-indicator {
+      display: flex;
+      padding: 10px 15px;
+      border-radius: 18px;
+      background-color: #f5f5f5;
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+      margin-bottom: 10px;
+    }
+    
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #999;
+      border-radius: 50%;
+      margin: 0 2px;
+      animation: typing 1.3s infinite ease-in-out;
+    }
+    
+    .typing-dot:nth-child(1) { animation-delay: 0s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.3s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.6s; }
+    
+    .itinerary {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 10px;
+      font-size: 14px;
+      border-left: 3px solid #1a365d;
+    }
+    
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .minimize-icon, .close-icon {
+      width: 12px;
+      height: 12px;
+      margin-left: 10px;
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">Butler</h1>
+      <div class="controls">
+        <button class="button minimize-button">−</button>
+        <button class="button close-button">×</button>
+      </div>
+    </div>
+    
+    <div class="chat-area" id="chat-area">
+      <div class="message assistant-message">
+        Good day, sir. How may I assist you today?
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <input type="text" id="message-input" placeholder="Type your message...">
+      <button id="send-button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // In a real Electron app, we would use ipcRenderer
+    // This is a simulation for demo purposes
+    const { ipcRenderer } = require('electron');
+    
+    const chatArea = document.getElementById('chat-area');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const minimizeButton = document.querySelector('.minimize-button');
+    const closeButton = document.querySelector('.close-button');
+    
+    // Add a message to the chat area
+    function addMessage(message, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('message');
+      messageDiv.classList.add(isUser ? 'user-message' : 'assistant-message');
+      
+      if (typeof message === 'object') {
+        // Handle different response types
+        if (message.type === 'itinerary') {
+          messageDiv.innerHTML = `I've prepared your itinerary, sir: <div class="itinerary">${message.content}</div>`;
+        } else {
+          messageDiv.textContent = message.content;
+        }
+      } else {
+        messageDiv.textContent = message;
+      }
+      
+      chatArea.appendChild(messageDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+    
+    // Show typing indicator
+    function showTypingIndicator() {
+      const indicatorDiv = document.createElement('div');
+      indicatorDiv.classList.add('typing-indicator');
+      indicatorDiv.id = 'typing-indicator';
+      
+      for (let i = 0; i < 3; i++) {
+        const dot = document.createElement('div');
+        dot.classList.add('typing-dot');
+        indicatorDiv.appendChild(dot);
+      }
+      
+      chatArea.appendChild(indicatorDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+    
+    // Remove typing indicator
+    function removeTypingIndicator() {
+      const indicator = document.getElementById('typing-indicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+    
+    // Send a message
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+      
+      // Add user message to chat
+      addMessage(message, true);
+      messageInput.value = '';
+      
+      // Show typing indicator
+      showTypingIndicator();
+      
+      // In a real app, this would use ipcRenderer to communicate with the main process
+      setTimeout(() => {
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        // Simulate assistant response
+        let response;
+        
+        if (message.toLowerCase().includes('itinerary') || message.toLowerCase().includes('plan my day')) {
+          // Simulate itinerary response
+          response = {
+            type: 'itinerary',
+            content: `### Today's Itinerary
+
+#### Scheduled Appointments
+- 9:30 AM: Team standup meeting
+- 1:00 PM: Lunch with client
+- 3:30 PM: Product review
+
+#### Tasks for Today
+- [ ] (HIGH) Complete quarterly report
+- [ ] (MEDIUM) Review budget proposal
+- [ ] (MEDIUM) Send follow-up emails
+
+#### Butler's Recommendations
+- It would be an excellent day to review your quarterly goals, sir.
+- Consider taking a short walk between 2pm and 3pm for optimal productivity.`
+          };
+        } else if (message.toLowerCase().includes('schedule') || message.toLowerCase().includes('appointment')) {
+          response = {
+            type: 'scheduling',
+            content: `Very good, sir. I've added that to your calendar.`
+          };
+        } else if (message.toLowerCase().includes('task') || message.toLowerCase().includes('remind')) {
+          response = {
+            type: 'task',
+            content: `Certainly, sir. I've added that to your task list.`
+          };
+        } else {
+          response = {
+            type: 'text',
+            content: `I'll take care of that for you, sir. Is there anything else you require?`
+          };
+        }
+        
+        addMessage(response);
+      }, 1500);
+    }
+    
+    // Event listeners
+    sendButton.addEventListener('click', sendMessage);
+    
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+    
+    minimizeButton.addEventListener('click', () => {
+      // In a real app: ipcRenderer.send('minimize-window');
+      console.log('Minimize window');
+    });
+    
+    closeButton.addEventListener('click', () => {
+      // In a real app: ipcRenderer.send('close-window');
+      console.log('Close window');
+    });
+    
+    // Simulated ipc event listener
+    // In a real app, this would be: ipcRenderer.on('assistant-response', (event, response) => {...})
+    function simulateAssistantResponse(response) {
+      removeTypingIndicator();
+      addMessage(response);
+    }
+  </script>
+</body>
+</html>
