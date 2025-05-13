@@ -1,1 +1,120 @@
+name: Butler Assistant Actions
 
+on:
+  # Triggers when you create an issue with specific labels
+  issues:
+    types: [opened, edited]
+  # Triggers when a specific command is added as a comment
+  issue_comment:
+    types: [created]
+  # Manual trigger from GitHub UI
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task for Butler to perform'
+        required: true
+        default: 'create-itinerary'
+        type: choice
+        options:
+          - create-itinerary
+          - schedule-meeting
+          - generate-content
+          - process-data
+
+jobs:
+  process-commands:
+    runs-on: ubuntu-latest
+    # Add permission for the GitHub token to create comments, etc.
+    permissions:
+      issues: write
+      contents: write
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm install axios moment
+
+      - name: Process command
+        id: process-command
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get issue title and body or workflow input
+          if [ "${{ github.event_name }}" == "issues" ] || [ "${{ github.event_name }}" == "issue_comment" ]; then
+            if [ "${{ github.event_name }}" == "issues" ]; then
+              COMMAND="${{ github.event.issue.title }}"
+              DETAILS="${{ github.event.issue.body }}"
+              ISSUE_NUMBER="${{ github.event.issue.number }}"
+            else
+              COMMAND="${{ github.event.comment.body }}"
+              DETAILS=""
+              ISSUE_NUMBER="${{ github.event.issue.number }}"
+            fi
+          else
+            COMMAND="${{ github.event.inputs.task }}"
+            DETAILS="Task triggered manually"
+          fi
+          
+          echo "Processing command: $COMMAND"
+          
+          # Create a file with the command details
+          echo "Command: $COMMAND" > command.txt
+          if [ ! -z "$DETAILS" ]; then
+            echo "Details: $DETAILS" >> command.txt
+          fi
+          
+          # Execute the appropriate action based on the command
+          if [[ "$COMMAND" == *"itinerary"* ]] || [[ "$COMMAND" == "create-itinerary" ]]; then
+            node .github/actions/create-itinerary.js "$COMMAND" "$DETAILS" "$ISSUE_NUMBER"
+          elif [[ "$COMMAND" == *"schedule"* ]] || [[ "$COMMAND" == *"meeting"* ]] || [[ "$COMMAND" == "schedule-meeting" ]]; then
+            node .github/actions/schedule-meeting.js "$COMMAND" "$DETAILS" "$ISSUE_NUMBER"
+          elif [[ "$COMMAND" == *"generate"* ]] || [[ "$COMMAND" == "generate-content" ]]; then
+            node .github/actions/generate-content.js "$COMMAND" "$DETAILS" "$ISSUE_NUMBER"
+          elif [[ "$COMMAND" == *"process"* ]] || [[ "$COMMAND" == *"data"* ]] || [[ "$COMMAND" == "process-data" ]]; then
+            node .github/actions/process-data.js "$COMMAND" "$DETAILS" "$ISSUE_NUMBER"
+          else
+            # Default action - ask the AI for help
+            node .github/actions/ai-assistant.js "$COMMAND" "$DETAILS" "$ISSUE_NUMBER"
+          fi
+          
+      - name: Create response file if it doesn't exist
+        run: |
+          if [ ! -f "response.md" ]; then
+            echo "Butler AI processed your request, but no specific response was generated." > response.md
+          fi
+          
+      - name: Comment on issue with results
+        if: github.event_name == 'issues' || github.event_name == 'issue_comment'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const response = fs.readFileSync('response.md', 'utf8');
+            const issueNumber = ${{ github.event.issue.number }};
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: response
+            });
+            
+      - name: Commit changes if needed
+        run: |
+          if [ -f "commit_changes" ]; then
+            git config --global user.name "Butler AI Assistant"
+            git config --global user.email "butler-ai@github.actions"
+            git add .
+            git commit -m "Butler AI: Automated task completion"
+            git push
+          fi
