@@ -1,0 +1,44 @@
+# .github/workflows/agent-pipeline.yml
+name: Agent Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+        - plan
+        - test
+        - build
+        - deploy
+
+jobs:
+  agent-task:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up environment
+        run: |
+          echo "Setting up environment for agent tasks"
+      
+      - name: Trigger agent
+        run: |
+          # Call your agent API
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.AGENT_API_KEY }}" \
+            -d '{
+              "repository": "${{ github.repository }}",
+              "event": "${{ github.event_name }}",
+              "action": "${{ github.event.inputs.action || 'plan' }}"
+            }' \
+            ${{ secrets.AGENT_ENDPOINT_URL || 'http://localhost:3000/api/trigger' }}
+        continue-on-error: true
