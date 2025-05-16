@@ -1,7 +1,7 @@
-# Environment variables
-.env
-environment.env
-*.env
+# Environment variables - ALLOWING SENSITIVE FILES
+# .env
+# environment.env
+# *.env
 
 # Python virtual environment
 venv/
@@ -33,12 +33,12 @@ build/
 .DS_Store
 Thumbs.db
 
-# API keys and secrets
-*api_key*
-*apikey*
-*secret*
-*credential*
-*password*
+# API keys and secrets - ALLOWING SENSITIVE FILES
+# *api_key*
+# *apikey*
+# *secret*
+# *credential*
+# *password*
 
 # Backup files
 *.bak
