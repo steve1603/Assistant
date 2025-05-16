@@ -1,0 +1,34 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Denote all files that are truly binary and should not be modified
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.mp3 binary
+*.zip binary
+*.pdf binary
+*.jar binary
+*.ttf binary
+*.exe binary
+
+# Explicitly declare text files to be normalized
+*.py text
+*.md text
+*.txt text
+*.html text
+*.css text
+*.js text
+*.json text
+*.yml text
+*.yaml text
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Declare files that should have specific line endings
+*.py text eol=lf 
